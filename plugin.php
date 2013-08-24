@@ -118,7 +118,7 @@ class EM_List_Tweets extends WP_Widget {
         $oauth_access_token = "393914675-3VVKsDCwWaeNYBgFoEDlu3uC1UmwGgYYAiZJFkhq";
         $oauth_access_token_secret = "xd7VAW5RHiOcpmRfnyr7DrHotkGk2RqdxENqLtg1p1E";
         $consumer_key = "VBhd4yfDM5InG2WlUOP4xQ";
-//        $consumer_secret = "jR6kfTczx3CuGzjQPi7pbJNhbcUSaUlhyRunimOk";
+        $consumer_secret = "jR6kfTczx3CuGzjQPi7pbJNhbcUSaUlhyRunimOk";
 
         $oauth = array('oauth_consumer_key' => $consumer_key,
             'oauth_nonce' => time(),
@@ -148,15 +148,16 @@ class EM_List_Tweets extends WP_Widget {
 
         // JSON data, with our tweets, comes back as object. We convert it into an array and assign it to a var.
         $twitter_data = json_decode($json, true);
+        
+        var_dump($twitter_data[3]['entities']['hashtags']);
 
-//        echo $twitter_data['errors'][0]['message'];
         // TODO: Change this into a dynamic var.
         $twitter_username = "EliMcMakin";
-        $twitter_output = "<ul>";
         
+        $twitter_output = "<ul>";
         if ($twitter_data['errors'][0]['message'] == 'Could not authenticate you') {
             $twitter_output .= "<li>There was an issue authenticating you with Twitter. Did you properly enter your oAuth information?</li>";
-        } elseif ($twitter_data) {
+        } elseif ($twitter_data[0]['id_str']) { // List any tweets if they exist.
             $i = 0;
             foreach ($twitter_data as $tweet) {
                 if ($i < 5) {
@@ -165,6 +166,7 @@ class EM_List_Tweets extends WP_Widget {
                         $twitter_output .= "<li>";
                             $twitter_output .= $tweet['text'];
 
+                            // Output a human readable time stamp.
                             if ($tweet['created_at']) {
                                 $twitter_output .= "<span class='time-meta'>";
                                     $time_diff = human_time_diff( strtotime( $tweet['created_at'] ) ) . ' ago';
@@ -172,7 +174,6 @@ class EM_List_Tweets extends WP_Widget {
                                     $twitter_output .= "<a href=\"https://twitter.com/$twitter_username/status/$tweet_id_str\">" . $time_diff . "</a>";
                                 $twitter_output .= "</span>";
                             }
-
 
                         $twitter_output .= "</li>";
 
@@ -182,8 +183,8 @@ class EM_List_Tweets extends WP_Widget {
                 }
                 $i++;
             }
-        } else {
-            $twitter_output .= "<li>There was an error: Either Twitter is down, or you have no tweets</li>";
+        } else { // If tweets don't exist, or if they cannot be retrieved, then display an error message.
+            $twitter_output .= "<li>There was an error: Either Twitter is down, or you have no tweets.</li>";
         }
         $twitter_output .= "</ul>";
         
