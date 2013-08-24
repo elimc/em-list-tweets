@@ -148,14 +148,29 @@ class EM_List_Tweets extends WP_Widget {
 
         $twitter_data = json_decode($json, true);
         
+        // TODO: Change this into a dynamic var.
+        $twitter_username = "EliMcMakin";
+        
+        // Start Twitter output.
+        $twitter_output = "<ul>";
         $i = 0;
         foreach ($twitter_data as $tweet) {
             if ($i < 5) {
                 if ($tweet['in_reply_to_screen_name'] === NULL) {
                     
+                    $twitter_output .= "<li>";
+                        $twitter_output .= $tweet['text'];
+                        
+                        if ($tweet['created_at']) {
+                            $twitter_output .= "<span class='time-meta'>";
+                                $time_diff = human_time_diff( strtotime( $tweet['created_at'] ) ) . ' ago';
+                                $tweet_id_str = $tweet['id_str'];
+                                $twitter_output .= "<a href=\"https://twitter.com/$twitter_username/status/$tweet_id_str\">" . $time_diff . "</a>";
+                            $twitter_output .= "</span>";
+                        }
                     
-                    echo $tweet['text'] . "<br>";
                     
+                    $twitter_output .= "</li>";
                     
                 } else {
                     continue;
@@ -163,6 +178,9 @@ class EM_List_Tweets extends WP_Widget {
             }
             $i++;
         }
+        $twitter_output .= "</ul>";
+        
+        echo $twitter_output;
         
         var_dump($twitter_data);
         
