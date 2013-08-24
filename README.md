@@ -1,5 +1,5 @@
 **EM List Tweets**
-============
+==================
 
 **EM List Tweets** is a WordPress widget that is designed to work with the latest version of Twitter's API 1.1.
 
