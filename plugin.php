@@ -149,10 +149,23 @@ class EM_List_Tweets extends WP_Widget {
         // JSON data, with our tweets, comes back as object. We convert it into an array and assign it to a var.
         $twitter_data = json_decode($json, true);
         
-        var_dump($twitter_data[3]['entities']['hashtags']);
+//        var_dump($twitter_data[3]['entities']['hashtags']);
 
         // TODO: Change this into a dynamic var.
         $twitter_username = "EliMcMakin";
+
+        function make_hashtags_into_links( $tweet ) {
+            if (!empty($tweet['entities']['hashtags'])) {
+                $content = $tweet['text'];
+                foreach ($tweet['entities']['hashtags'] as $hashtag) {
+                    $url = 'https://twitter.com/search?q=' . urlencode( $hashtag['text'] );  
+                    $content .= str_ireplace('#' . $hashtag['text'],  '<a href="' . esc_url( $url ) . '">#' . $hashtag['text'] . '</a>', $tweet['text']);
+                }
+                return $content;
+            } else {
+                return $tweet;
+            }
+        }
         
         $twitter_output = "<ul>";
         if ($twitter_data['errors'][0]['message'] == 'Could not authenticate you') {
@@ -164,7 +177,11 @@ class EM_List_Tweets extends WP_Widget {
                     if ($tweet['in_reply_to_screen_name'] === NULL) {
 
                         $twitter_output .= "<li>";
-                            $twitter_output .= $tweet['text'];
+                            
+                            $content = make_hashtags_into_links( $tweet );
+                            var_dump($content);
+//                            $twitter_output .= make_clickable( $tweet['text'] );
+//                            $twitter_output .= make_clickable( $content );
 
                             // Output a human readable time stamp.
                             if ($tweet['created_at']) {
@@ -190,7 +207,7 @@ class EM_List_Tweets extends WP_Widget {
         
         echo $twitter_output;
         
-        var_dump($twitter_data);
+//        var_dump($twitter_data);
         
         
         
