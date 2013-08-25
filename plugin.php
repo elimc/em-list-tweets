@@ -149,7 +149,7 @@ class EM_List_Tweets extends WP_Widget {
         // JSON data, with our tweets, comes back as object. We convert it into an array and assign it to a var.
         $twitter_data = json_decode($json, true);
         
-//        var_dump($twitter_data[3]['entities']['hashtags']);
+//        var_dump($twitter_data[3]['entities']['hashtags']['text']);
 
         // TODO: Change this into a dynamic var.
         $twitter_username = "EliMcMakin";
@@ -224,37 +224,34 @@ class EM_List_Tweets extends WP_Widget {
         $twitter_output = "<ul>";
         if ($twitter_data['errors'][0]['message'] == 'Could not authenticate you') {
             $twitter_output .= "<li>There was an issue authenticating you with Twitter. Did you properly enter your oAuth information?</li>";
-        } elseif ($twitter_data[0]['id_str']) { // List any tweets if they exist.
+        } elseif ($twitter_data[0]['id_str']) { // Check if @username has any tweets.
             $i = 0;
             foreach ($twitter_data as $tweet) {
                 if ($i < 25) {
-                    if ($tweet['in_reply_to_screen_name'] === NULL || $tweet['in_reply_to_screen_name'] !== NULL) { // If not a retweet, then start the tweet output.
-
-                        $twitter_output .= "<li>";
-                            
-                            $parsed_link = $tweet['text'];
-
-                            $parsed_link = make_hashtaggable( $parsed_link );
-                            $parsed_link = link_twitter_users( $parsed_link );
-                            $parsed_link = make_clickable( $parsed_link );
-                            
-                            
-                            $twitter_output .= $parsed_link;
-                            
-                            // Output a human readable time stamp.
-                            if ($tweet['created_at']) {
-                                $twitter_output .= "<span class='time-meta'>";
-                                    $time_diff = human_time_diff( strtotime( $tweet['created_at'] ) ) . ' ago';
-                                    $tweet_id_str = $tweet['id_str'];
-                                    $twitter_output .= "<a href=\"https://twitter.com/$twitter_username/status/$tweet_id_str\">" . $time_diff . "</a>";
-                                $twitter_output .= "</span>";
-                            }
-
-                        $twitter_output .= "</li>";
-
-                    } else {
-                        continue; // If particular tweet is a retweet, just skip it.
+                    if ($tweet['in_reply_to_screen_name'] !== NULL) { // If particular tweet is directed @username, then skip it.
+                        continue;
                     }
+                    
+                    //
+                    $twitter_output .= "<li>";
+
+                        $parsed_link = $tweet['text'];
+
+                        if ( !empty( $tweet['entities']['user_mentions'] ) ) { $parsed_link = link_twitter_users( $parsed_link ); }
+                        if ( !empty( $tweet['entities']['hashtags'] ) ) { $parsed_link = make_hashtaggable( $parsed_link ); }
+                        if ( !empty( $tweet['entities']['urls'] ) ) { $parsed_link = make_clickable( $parsed_link ); }
+                        $twitter_output .= $parsed_link;
+
+                        // Output a human readable time stamp.
+                        if ($tweet['created_at']) {
+                            $twitter_output .= "<span class='time-meta'>";
+                                $time_diff = human_time_diff( strtotime( $tweet['created_at'] ) ) . ' ago';
+                                $tweet_id_str = $tweet['id_str'];
+                                $twitter_output .= "<a href=\"https://twitter.com/$twitter_username/status/$tweet_id_str\">" . $time_diff . "</a>";
+                            $twitter_output .= "</span>";
+                        }
+
+                    $twitter_output .= "</li>";
                 }
                 $i++;
             }
@@ -266,8 +263,6 @@ class EM_List_Tweets extends WP_Widget {
         echo $twitter_output;
         
 //        var_dump($twitter_data);
-        
-        
         
 		include( plugin_dir_path( __FILE__ ) . '/views/widget.php' );
 
