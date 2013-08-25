@@ -153,19 +153,73 @@ class EM_List_Tweets extends WP_Widget {
 
         // TODO: Change this into a dynamic var.
         $twitter_username = "EliMcMakin";
-
-        function make_hashtags_into_links( $tweet ) {
-            if (!empty($tweet['entities']['hashtags'])) {
-                $content = $tweet['text'];
-                foreach ($tweet['entities']['hashtags'] as $hashtag) {
-                    $url = 'https://twitter.com/search?q=' . urlencode( $hashtag['text'] );  
-                    $content .= str_ireplace('#' . $hashtag['text'],  '<a href="' . esc_url( $url ) . '">#' . $hashtag['text'] . '</a>', $tweet['text']);
-                }
-                return $content;
-            } else {
-                return $tweet;
-            }
+        
+        /**
+         * Replace @username with a link to that twitter user
+         *
+         * @param string $parsed_link - Tweet text to parse.
+         * @return string - Tweet text with @replies linked
+         */
+        function link_twitter_users( $parsed_link ) {
+            $parsed_link = preg_replace_callback( "/(^|\s)@(\w+)/i", "link_twitter_users_cb", $parsed_link );
+            return $parsed_link;
         }
+
+        /**
+         * Setup the @username matches to pass to a link building function.
+         * 
+         * @param string $matches - An array of all the @username matches.
+         * @return string
+         */
+        function link_twitter_users_cb( $matches ) {
+            $link_attributes = array(
+                "href"	=> "http://twitter.com/" . urlencode( $matches[2] ),
+                "class"	=> "twitter-user"
+            );
+            return " " . build_link( "@" . $matches[2], $link_attributes );
+        }
+        
+        /**
+        * Replace #hashtag with a link to twitter.com for that hashtag.
+        *
+        * @param string $text - Tweet text to parse.
+        * @return string - Tweet text with #hashtags linked.
+        */
+        function make_hashtaggable( $parsed_link ) {
+            $parsed_link = preg_replace_callback("/(^|\s)(#[\w\x{00C0}-\x{00D6}\x{00D8}-\x{00F6}\x{00F8}-\x{00FF}]+)/iu", "make_hashtaggable_cb", $parsed_link);
+            return $parsed_link;
+        }
+
+        /**
+         * Setup the hashtag matches to pass to a link building function.
+         * 
+         * @param array $matches - An array of all of the hashtag matches.
+         * @return string - Tweet text with $hashtags linked.
+         */
+        function make_hashtaggable_cb( $matches ) {
+            $link_attributes = array(
+                "href"	=> "http://twitter.com/search?q=" . urlencode( $matches[2] ),
+                "class"	=> "twitter-hashtag",
+            );
+            return " " . build_link( $matches[2], $link_attributes );
+        }
+        
+        /**
+         * Build links, from values in an assoc. array, with this generic helper function.
+         * 
+         * @param array $matches - An array of all of the hashtag matches.
+         * @param array $link_attributes - An array of text needed for links to perform Twitter searches.
+         * @return string - Tweet text with $hashtags linked.
+         */
+        function build_link( $matches, $link_attributes = array() ) {
+            $link = "<a";
+            foreach ( $link_attributes as $name => $value ) {
+                $link .= " " . esc_attr( $name ) . "=\"" . esc_attr( $value ) . "\"";
+            }
+            $link .= ">" . esc_html( $matches ) . "</a>";
+            return $link;
+        }
+        
         
         $twitter_output = "<ul>";
         if ($twitter_data['errors'][0]['message'] == 'Could not authenticate you') {
@@ -173,16 +227,20 @@ class EM_List_Tweets extends WP_Widget {
         } elseif ($twitter_data[0]['id_str']) { // List any tweets if they exist.
             $i = 0;
             foreach ($twitter_data as $tweet) {
-                if ($i < 5) {
-                    if ($tweet['in_reply_to_screen_name'] === NULL) {
+                if ($i < 25) {
+                    if ($tweet['in_reply_to_screen_name'] === NULL || $tweet['in_reply_to_screen_name'] !== NULL) { // If not a retweet, then start the tweet output.
 
                         $twitter_output .= "<li>";
                             
-                            $content = make_hashtags_into_links( $tweet );
-                            var_dump($content);
-//                            $twitter_output .= make_clickable( $tweet['text'] );
-//                            $twitter_output .= make_clickable( $content );
+                            $parsed_link = $tweet['text'];
 
+                            $parsed_link = make_hashtaggable( $parsed_link );
+                            $parsed_link = link_twitter_users( $parsed_link );
+                            $parsed_link = make_clickable( $parsed_link );
+                            
+                            
+                            $twitter_output .= $parsed_link;
+                            
                             // Output a human readable time stamp.
                             if ($tweet['created_at']) {
                                 $twitter_output .= "<span class='time-meta'>";
@@ -195,7 +253,7 @@ class EM_List_Tweets extends WP_Widget {
                         $twitter_output .= "</li>";
 
                     } else {
-                        continue;
+                        continue; // If particular tweet is a retweet, just skip it.
                     }
                 }
                 $i++;
