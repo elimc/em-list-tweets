@@ -34,7 +34,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  * @link https://dev.twitter.com/docs Twitter developer documentation.
  * @link http://stackoverflow.com/a/15314662 Create a developer account for Twitter (tutorial).
  * @link http://stackoverflow.com/a/12939923 Grab Twitter feed.
- * @link http://wp.tutsplus.com/tutorials/plugins/how-to-create-a-recent-tweets-widget/ Soft cache code with transients and other code goodness.
+ * @link http://wp.tutsplus.com/tutorials/plugins/how-to-create-a-recent-tweets-widget/ Code goodness.
+ * @link http://wp.tutsplus.com/tutorials/getting-started-with-the-wordpress-transient-api-part-2/?search_index=2 Transients technique.
  */
 class EM_List_Tweets extends WP_Widget {
 
@@ -147,12 +148,22 @@ class EM_List_Tweets extends WP_Widget {
         curl_close($feed);
 
         // JSON data, with our tweets, comes back as object. We convert it into an array and assign it to a var.
-        $twitter_data = json_decode($json, true);
+        $twitter_data_feed = json_decode($json, true);
         
-//        var_dump($twitter_data[3]['entities']['hashtags']['text']);
-
         // TODO: Change this into a dynamic var.
         $twitter_username = "EliMcMakin";
+        
+        // TODO: Change this into a dynamic var.
+        $user_expiration = 60 * 60 * 12;
+        
+        $transient_expiration = $user_expiration;
+        
+        if ( !get_transient( 'twitter_data_key' ) ) {
+            set_transient( 'twitter_data_key', $twitter_data_feed, $transient_expiration );
+        }
+        
+        $twitter_data = get_transient( 'twitter_data_key' );
+        
         
         /**
          * Replace @username with a link to that twitter user
