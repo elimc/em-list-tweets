@@ -150,6 +150,8 @@ class EM_List_Tweets extends WP_Widget {
         // JSON data, with our tweets, comes back as object. We convert it into an array and assign it to a var.
         $twitter_data_feed = json_decode($json, true);
         
+        
+        
         // TODO: Change this into a dynamic var.
         $twitter_username = "EliMcMakin";
         
@@ -292,7 +294,7 @@ class EM_List_Tweets extends WP_Widget {
 		$instance = $old_instance;
 
 		// TODO:	Here is where you update your widget's old values with the new, incoming values
-
+        
 		return $instance;
 
 	} // end widget
@@ -304,12 +306,20 @@ class EM_List_Tweets extends WP_Widget {
 	 */
 	public function form( $instance ) {
 
-    	// TODO:	Define default values for your variables
-		$instance = wp_parse_args(
-			(array) $instance
-		);
-
+        
+        $username = $instance;
+        
 		// TODO:	Store the values of the widget in their own variable
+        
+        ?>
+
+        <p>  
+            <label for="<?php echo $this->get_field_id('title'); ?>"><?php _e('Title', 'EM_Twitter_Widget'); ?>: </label>  
+            <input id="<?php echo $this->get_field_id('title'); ?>" name="<?php echo $this->get_field_name('title'); ?>" type="text" value="<?php echo esc_attr($title);?>" style="width:100%;" />  
+        </p>  
+        
+        <?php
+        
 
 		// Display the admin form
 		include( plugin_dir_path(__FILE__) . '/views/admin.php' );
@@ -319,6 +329,12 @@ class EM_List_Tweets extends WP_Widget {
 	/*--------------------------------------------------*/
 	/* Public Functions
 	/*--------------------------------------------------*/
+
+    
+    function sanitize_everything( $unsantized_data ){
+        $sanitized_data = strip_tags( trim( $unsantized_data ) );
+        return $sanitized_data;
+    }
 
 	/**
 	 * Fired when the plugin is activated.
