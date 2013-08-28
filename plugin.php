@@ -87,8 +87,20 @@ class EM_List_Tweets extends WP_Widget {
 	public function widget( $args, $instance ) {
 
 		extract( $args, EXTR_SKIP );
+        
+        // Dynamic vars input by the user.
+        $twitter_username = $instance['username'];
+        $tweets_to_display = $instance[ 'tweets_to_display' ];
+        $cache_expiration = $instance[ 'cache_expiration' ];
+        
+        $oauth_access_token = $instance['oauth_access_token'];
+        $oauth_access_token_secret = $instance['oauth_access_token_secret'];
+        $consumer_key = $instance['consumer_key'];
+        $consumer_secret = $instance['consumer_secret'];
 
 		echo $before_widget;
+        
+        echo $before_title . $instance['title'] . $after_title;
 
 		// TODO:	Here is where you manipulate your widget's values based on their input fields
 
@@ -115,11 +127,6 @@ class EM_List_Tweets extends WP_Widget {
         }
 
         $url = "https://api.twitter.com/1.1/statuses/user_timeline.json";
-
-        $oauth_access_token = "393914675-3VVKsDCwWaeNYBgFoEDlu3uC1UmwGgYYAiZJFkhq";
-        $oauth_access_token_secret = "xd7VAW5RHiOcpmRfnyr7DrHotkGk2RqdxENqLtg1p1E";
-        $consumer_key = "VBhd4yfDM5InG2WlUOP4xQ";
-        $consumer_secret = "jR6kfTczx3CuGzjQPi7pbJNhbcUSaUlhyRunimOk";
 
         $oauth = array('oauth_consumer_key' => $consumer_key,
             'oauth_nonce' => time(),
@@ -150,13 +157,8 @@ class EM_List_Tweets extends WP_Widget {
         // JSON data, with our tweets, comes back as object. We convert it into an array and assign it to a var.
         $twitter_data_feed = json_decode($json, true);
         
-        
-        
         // TODO: Change this into a dynamic var.
-        $twitter_username = "EliMcMakin";
-        
-        // TODO: Change this into a dynamic var.
-        $user_expiration = 60 * 60 * 12;
+        $user_expiration = 60 * 60 * $cache_expiration;
         
         $transient_expiration = $user_expiration;
         
@@ -240,7 +242,7 @@ class EM_List_Tweets extends WP_Widget {
         } elseif ($twitter_data[0]['id_str']) { // Check if @username has any tweets.
             $i = 0;
             foreach ($twitter_data as $tweet) {
-                if ($i < 25) {
+                if ($i < $tweets_to_display) {
                     if ($tweet['in_reply_to_screen_name'] !== NULL) { // If particular tweet is directed @username, then skip it.
                         continue;
                     }
@@ -282,7 +284,7 @@ class EM_List_Tweets extends WP_Widget {
 		echo $after_widget;
 
 	} // end widget
-
+    
 	/**
 	 * Processes the widget's options to be saved.
 	 *
@@ -291,11 +293,21 @@ class EM_List_Tweets extends WP_Widget {
 	 */
 	public function update( $new_instance, $old_instance ) {
 
-		$instance = $old_instance;
+        $old_instance = array();
+        
+		$old_instance[ 'title' ] = ( !empty( $new_instance[ 'title' ] ) ) ? trim( strip_tags( $new_instance[ 'title' ] ) ) : '';
+		$old_instance[ 'username' ] = ( !empty( $new_instance[ 'username' ] ) ) ? trim( strip_tags( $new_instance[ 'username' ] ) ) : '';
+		$old_instance[ 'tweets_to_display' ] = ( !empty( $new_instance[ 'tweets_to_display' ] ) ) ? trim( strip_tags( intval( $new_instance[ 'tweets_to_display' ] ) ) ) : '';
+		$old_instance[ 'cache_expiration' ] = ( !empty( $new_instance[ 'cache_expiration' ] ) ) ? trim( strip_tags( intval( $new_instance[ 'cache_expiration' ] ) ) ) : '';
+        
+		$old_instance[ 'oauth_access_token' ] = ( !empty( $new_instance[ 'oauth_access_token' ] ) ) ? trim( strip_tags( $new_instance[ 'oauth_access_token' ] ) ) : '';
+		$old_instance[ 'oauth_access_token_secret' ] = ( !empty( $new_instance[ 'oauth_access_token_secret' ] ) ) ? trim( strip_tags( $new_instance[ 'oauth_access_token_secret' ] ) ) : '';
+		$old_instance[ 'consumer_key' ] = ( !empty( $new_instance[ 'consumer_key' ] ) ) ? trim( strip_tags( $new_instance[ 'consumer_key' ] ) ) : '';
+		$old_instance[ 'consumer_secret' ] = ( !empty( $new_instance[ 'consumer_secret' ] ) ) ? trim( strip_tags( $new_instance[ 'consumer_secret' ] ) ) : '';
+
+		return $old_instance;
 
 		// TODO:	Here is where you update your widget's old values with the new, incoming values
-        
-		return $instance;
 
 	} // end widget
 
@@ -306,20 +318,57 @@ class EM_List_Tweets extends WP_Widget {
 	 */
 	public function form( $instance ) {
 
+		$title = ( isset( $instance[ 'title' ] ) ) ? esc_attr( $instance[ 'title' ] ) : "Twitter Feed";
+		$username = ( isset( $instance[ 'username' ] ) ) ? esc_attr( $instance[ 'username' ] ) : "Twitter Username";
+		$tweets_to_display = ( isset( $instance[ 'tweets_to_display' ] ) ) ? esc_attr( $instance[ 'tweets_to_display' ] ) : 5;
+		$cache_expiration = ( isset( $instance[ 'cache_expiration' ] ) ) ? esc_attr( $instance[ 'cache_expiration' ] ) : 12;
         
-        $username = $instance;
+		$oauth_access_token = ( isset( $instance[ 'oauth_access_token' ] ) ) ? esc_attr( $instance[ 'oauth_access_token' ] ) : "";
+		$oauth_access_token_secret = ( isset( $instance[ 'oauth_access_token_secret' ] ) ) ? esc_attr( $instance[ 'oauth_access_token_secret' ] ) : "";
+		$consumer_key = ( isset( $instance[ 'consumer_key' ] ) ) ? esc_attr( $instance[ 'consumer_key' ] ) : "";
+		$consumer_secret = ( isset( $instance[ 'consumer_secret' ] ) ) ? esc_attr( $instance[ 'consumer_secret' ] ) : "";
         
-		// TODO:	Store the values of the widget in their own variable
         
-        ?>
+//        $oauth_access_token = "393914675-3VVKsDCwWaeNYBgFoEDlu3uC1UmwGgYYAiZJFkhq";
+//        $oauth_access_token_secret = "xd7VAW5RHiOcpmRfnyr7DrHotkGk2RqdxENqLtg1p1E";
+//        $consumer_key = "VBhd4yfDM5InG2WlUOP4xQ";
+//        $consumer_secret = "jR6kfTczx3CuGzjQPi7pbJNhbcUSaUlhyRunimOk";
+        
+        
+		?>
 
-        <p>  
-            <label for="<?php echo $this->get_field_id('title'); ?>"><?php _e('Title', 'EM_Twitter_Widget'); ?>: </label>  
-            <input id="<?php echo $this->get_field_id('title'); ?>" name="<?php echo $this->get_field_name('title'); ?>" type="text" value="<?php echo esc_attr($title);?>" style="width:100%;" />  
-        </p>  
+		<p>
+            <label for="<?php echo $this->get_field_id( 'title' ); ?>"><?php echo "Title:"; ?></label> 
+            <input class="widefat" id="<?php echo $this->get_field_id( 'title' ); ?>" name="<?php echo $this->get_field_name( 'title' ); ?>" type="text" value="<?php echo $title; ?>" />
+		</p>
+		<p>
+            <label for="<?php echo $this->get_field_id( 'username' ); ?>"><?php echo "Username:"; ?></label> 
+            <input class="widefat" id="<?php echo $this->get_field_id( 'username' ); ?>" name="<?php echo $this->get_field_name( 'username' ); ?>" type="text" value="<?php echo $username; ?>" />
+		</p>
+		<p>
+            <label for="<?php echo $this->get_field_id( 'tweets_to_display' ); ?>"><?php echo "Number of Tweets to show: "; ?></label><input id="<?php echo $this->get_field_id( 'tweets_to_display' ); ?>" name="<?php echo $this->get_field_name( 'tweets_to_display' ); ?>" type="text" value="<?php echo $tweets_to_display; ?>" size="1"/>
+		</p>
+		<p>
+            <label for="<?php echo $this->get_field_id( 'cache_expiration' ); ?>"><?php echo "Refresh feed every "; ?></label><input id="<?php echo $this->get_field_id( 'cache_expiration' ); ?>" name="<?php echo $this->get_field_name( 'cache_expiration' ); ?>" type="text" value="<?php echo $cache_expiration; ?>" size="3" /><label for="<?php echo $this->get_field_id( 'cache_expiration' ); ?>"> hours</label>
+		</p>
+		<p>
+            <label for="<?php echo $this->get_field_id( 'oauth_access_token' ); ?>"><?php echo "oAuth Access Token:"; ?></label> 
+            <input class="widefat" id="<?php echo $this->get_field_id( 'oauth_access_token' ); ?>" name="<?php echo $this->get_field_name( 'oauth_access_token' ); ?>" type="text" value="<?php echo $oauth_access_token; ?>" />
+		</p>
+		<p>
+            <label for="<?php echo $this->get_field_id( 'oauth_access_token_secret' ); ?>"><?php echo "oAuth Access Token Secret:"; ?></label> 
+            <input class="widefat" id="<?php echo $this->get_field_id( 'oauth_access_token_secret' ); ?>" name="<?php echo $this->get_field_name( 'oauth_access_token_secret' ); ?>" type="text" value="<?php echo $oauth_access_token_secret; ?>" />
+		</p>
+		<p>
+            <label for="<?php echo $this->get_field_id( 'consumer_key' ); ?>"><?php echo "Consumer Key:"; ?></label> 
+            <input class="widefat" id="<?php echo $this->get_field_id( 'consumer_key' ); ?>" name="<?php echo $this->get_field_name( 'consumer_key' ); ?>" type="text" value="<?php echo $consumer_key; ?>" />
+		</p>
+		<p>
+            <label for="<?php echo $this->get_field_id( 'consumer_secret' ); ?>"><?php echo "Consumer Secret:"; ?></label> 
+            <input class="widefat" id="<?php echo $this->get_field_id( 'consumer_secret' ); ?>" name="<?php echo $this->get_field_name( 'consumer_secret' ); ?>" type="text" value="<?php echo $consumer_secret; ?>" />
+		</p>
         
         <?php
-        
 
 		// Display the admin form
 		include( plugin_dir_path(__FILE__) . '/views/admin.php' );
@@ -329,12 +378,6 @@ class EM_List_Tweets extends WP_Widget {
 	/*--------------------------------------------------*/
 	/* Public Functions
 	/*--------------------------------------------------*/
-
-    
-    function sanitize_everything( $unsantized_data ){
-        $sanitized_data = strip_tags( trim( $unsantized_data ) );
-        return $sanitized_data;
-    }
 
 	/**
 	 * Fired when the plugin is activated.
