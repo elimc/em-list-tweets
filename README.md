@@ -50,6 +50,9 @@ You can download this widget and upload it with WordPress to your site's plugin 
 Changelog
 ---------
 
+### .9 (August 27, 2013)
+* Plugin fully functional, but still in beta testing phase.
+
 ### .1 (August 23, 2013)
 * Initial commit
 

@@ -3,7 +3,7 @@
 Plugin Name: EM List Tweets
 Plugin URI: https://github.com/elimc/em-list-tweets
 Description: Displays recent tweets with Twitter API 1.1
-Version: .1
+Version: .9
 Author: Eli McMakin
 Author URI: http://elimcmakin.com/
 Author Email: elimc184@hotmail.com
@@ -49,12 +49,6 @@ class EM_List_Tweets extends WP_Widget {
 	 */
 	public function __construct() {
 
-		// load plugin text domain
-
-		// Hooks fired when the Widget is activated and deactivated
-		// register_activation_hook( __FILE__, array( $this, 'activate' ) );
-		// register_deactivation_hook( __FILE__, array( $this, 'deactivate' ) );
-
 		parent::__construct(
 			'widget-name-id',
 			__( 'EM List Tweets' ),
@@ -63,14 +57,6 @@ class EM_List_Tweets extends WP_Widget {
 				'description'	=>	__( 'Display latest tweets with Twitter API 1.1' )
 			)
 		);
-
-		// Register admin styles and scripts
-		// add_action( 'admin_print_styles', array( $this, 'register_admin_styles' ) );
-		// add_action( 'admin_enqueue_scripts', array( $this, 'register_admin_scripts' ) );
-
-		// Register site styles and scripts
-		// add_action( 'wp_enqueue_scripts', array( $this, 'register_widget_styles' ) );
-		// add_action( 'wp_enqueue_scripts', array( $this, 'register_widget_scripts' ) );
 
 	} // end constructor
 
@@ -102,183 +88,6 @@ class EM_List_Tweets extends WP_Widget {
         
         echo $before_title . $instance['title'] . $after_title;
 
-		// TODO:	Here is where you manipulate your widget's values based on their input fields
-
-        
-        // Code to fetch the feed was taken from here: http://stackoverflow.com/a/12939923
-        function buildBaseString($baseURI, $method, $params)
-        {
-            $r = array();
-            ksort($params);
-            foreach ($params as $key => $value) {
-                $r[] = "$key=" . rawurlencode($value);
-            }
-            return $method . "&" . rawurlencode($baseURI) . '&' . rawurlencode(implode('&', $r));
-        }
-
-        function buildAuthorizationHeader($oauth)
-        {
-            $r = 'Authorization: OAuth ';
-            $values = array();
-            foreach ($oauth as $key => $value)
-                $values[] = "$key=\"" . rawurlencode($value) . "\"";
-            $r .= implode(', ', $values);
-            return $r;
-        }
-
-        $url = "https://api.twitter.com/1.1/statuses/user_timeline.json";
-
-        $oauth = array('oauth_consumer_key' => $consumer_key,
-            'oauth_nonce' => time(),
-            'oauth_signature_method' => 'HMAC-SHA1',
-            'oauth_token' => $oauth_access_token,
-            'oauth_timestamp' => time(),
-            'oauth_version' => '1.0');
-
-        $base_info = buildBaseString($url, 'GET', $oauth);
-        $composite_key = rawurlencode($consumer_secret) . '&' . rawurlencode($oauth_access_token_secret);
-        $oauth_signature = base64_encode(hash_hmac('sha1', $base_info, $composite_key, true));
-        $oauth['oauth_signature'] = $oauth_signature;
-
-        // Make Requests
-        $header = array(buildAuthorizationHeader($oauth), 'Expect:');
-        $options = array(CURLOPT_HTTPHEADER => $header,
-            //CURLOPT_POSTFIELDS => $postfields,
-            CURLOPT_HEADER => false,
-            CURLOPT_URL => $url,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_SSL_VERIFYPEER => false);
-
-        $feed = curl_init();
-        curl_setopt_array($feed, $options);
-        $json = curl_exec($feed);
-        curl_close($feed);
-
-        // JSON data, with our tweets, comes back as object. We convert it into an array and assign it to a var.
-        $twitter_data_feed = json_decode($json, true);
-        
-        // TODO: Change this into a dynamic var.
-        $user_expiration = 60 * 60 * $cache_expiration;
-        
-        $transient_expiration = $user_expiration;
-        
-        if ( !get_transient( 'twitter_data_key' ) ) {
-            set_transient( 'twitter_data_key', $twitter_data_feed, $transient_expiration );
-        }
-        
-        $twitter_data = get_transient( 'twitter_data_key' );
-        
-        
-        /**
-         * Replace @username with a link to that twitter user
-         *
-         * @param string $parsed_link - Tweet text to parse.
-         * @return string - Tweet text with @replies linked
-         */
-        function link_twitter_users( $parsed_link ) {
-            $parsed_link = preg_replace_callback( "/(^|\s)@(\w+)/i", "link_twitter_users_cb", $parsed_link );
-            return $parsed_link;
-        }
-
-        /**
-         * Setup the @username matches to pass to a link building function.
-         * 
-         * @param string $matches - An array of all the @username matches.
-         * @return string
-         */
-        function link_twitter_users_cb( $matches ) {
-            $link_attributes = array(
-                "href"	=> "http://twitter.com/" . urlencode( $matches[2] ),
-                "class"	=> "twitter-user"
-            );
-            return " " . build_link( "@" . $matches[2], $link_attributes );
-        }
-        
-        /**
-        * Replace #hashtag with a link to twitter.com for that hashtag.
-        *
-        * @param string $text - Tweet text to parse.
-        * @return string - Tweet text with #hashtags linked.
-        */
-        function make_hashtaggable( $parsed_link ) {
-            $parsed_link = preg_replace_callback("/(^|\s)(#[\w\x{00C0}-\x{00D6}\x{00D8}-\x{00F6}\x{00F8}-\x{00FF}]+)/iu", "make_hashtaggable_cb", $parsed_link);
-            return $parsed_link;
-        }
-
-        /**
-         * Setup the hashtag matches to pass to a link building function.
-         * 
-         * @param array $matches - An array of all of the hashtag matches.
-         * @return string - Tweet text with $hashtags linked.
-         */
-        function make_hashtaggable_cb( $matches ) {
-            $link_attributes = array(
-                "href"	=> "http://twitter.com/search?q=" . urlencode( $matches[2] ),
-                "class"	=> "twitter-hashtag",
-            );
-            return " " . build_link( $matches[2], $link_attributes );
-        }
-        
-        /**
-         * Build links, from values in an assoc. array, with this generic helper function.
-         * 
-         * @param array $matches - An array of all of the hashtag matches.
-         * @param array $link_attributes - An array of text needed for links to perform Twitter searches.
-         * @return string - Tweet text with $hashtags linked.
-         */
-        function build_link( $matches, $link_attributes = array() ) {
-            $link = "<a";
-            foreach ( $link_attributes as $name => $value ) {
-                $link .= " " . esc_attr( $name ) . "=\"" . esc_attr( $value ) . "\"";
-            }
-            $link .= ">" . esc_html( $matches ) . "</a>";
-            return $link;
-        }
-        
-        
-        $twitter_output = "<ul>";
-        if ($twitter_data['errors'][0]['message'] == 'Could not authenticate you') {
-            $twitter_output .= "<li>There was an issue authenticating you with Twitter. Did you properly enter your oAuth information?</li>";
-        } elseif ($twitter_data[0]['id_str']) { // Check if @username has any tweets.
-            $i = 0;
-            foreach ($twitter_data as $tweet) {
-                if ($i < $tweets_to_display) {
-                    if ($tweet['in_reply_to_screen_name'] !== NULL) { // If particular tweet is directed @username, then skip it.
-                        continue;
-                    }
-                    
-                    //
-                    $twitter_output .= "<li>";
-
-                        $parsed_link = $tweet['text'];
-
-                        if ( !empty( $tweet['entities']['user_mentions'] ) ) { $parsed_link = link_twitter_users( $parsed_link ); }
-                        if ( !empty( $tweet['entities']['hashtags'] ) ) { $parsed_link = make_hashtaggable( $parsed_link ); }
-                        if ( !empty( $tweet['entities']['urls'] ) ) { $parsed_link = make_clickable( $parsed_link ); }
-                        $twitter_output .= $parsed_link;
-
-                        // Output a human readable time stamp.
-                        if ($tweet['created_at']) {
-                            $twitter_output .= "<span class='time-meta'>";
-                                $time_diff = human_time_diff( strtotime( $tweet['created_at'] ) ) . ' ago';
-                                $tweet_id_str = $tweet['id_str'];
-                                $twitter_output .= "<a href=\"https://twitter.com/$twitter_username/status/$tweet_id_str\">" . $time_diff . "</a>";
-                            $twitter_output .= "</span>";
-                        }
-
-                    $twitter_output .= "</li>";
-                }
-                $i++;
-            }
-        } else { // If tweets don't exist, or if they cannot be retrieved, then display an error message.
-            $twitter_output .= "<li>There was an error: Either Twitter is down, or you have no tweets.</li>";
-        }
-        $twitter_output .= "</ul>";
-        
-        echo $twitter_output;
-        
-//        var_dump($twitter_data);
-        
 		include( plugin_dir_path( __FILE__ ) . '/views/widget.php' );
 
 		echo $after_widget;
@@ -296,7 +105,7 @@ class EM_List_Tweets extends WP_Widget {
         $old_instance = array();
         
 		$old_instance[ 'title' ] = ( !empty( $new_instance[ 'title' ] ) ) ? trim( strip_tags( $new_instance[ 'title' ] ) ) : '';
-		$old_instance[ 'username' ] = ( !empty( $new_instance[ 'username' ] ) ) ? trim( strip_tags( $new_instance[ 'username' ] ) ) : '';
+		$old_instance[ 'username' ] = ( !empty( $new_instance[ 'username' ] ) ) ? trim( strip_tags( str_replace( "@", "", $new_instance[ 'username' ]) ) ) : '';
 		$old_instance[ 'tweets_to_display' ] = ( !empty( $new_instance[ 'tweets_to_display' ] ) ) ? trim( strip_tags( intval( $new_instance[ 'tweets_to_display' ] ) ) ) : '';
 		$old_instance[ 'cache_expiration' ] = ( !empty( $new_instance[ 'cache_expiration' ] ) ) ? trim( strip_tags( intval( $new_instance[ 'cache_expiration' ] ) ) ) : '';
         
@@ -328,114 +137,10 @@ class EM_List_Tweets extends WP_Widget {
 		$consumer_key = ( isset( $instance[ 'consumer_key' ] ) ) ? esc_attr( $instance[ 'consumer_key' ] ) : "";
 		$consumer_secret = ( isset( $instance[ 'consumer_secret' ] ) ) ? esc_attr( $instance[ 'consumer_secret' ] ) : "";
         
-        
-//        $oauth_access_token = "393914675-3VVKsDCwWaeNYBgFoEDlu3uC1UmwGgYYAiZJFkhq";
-//        $oauth_access_token_secret = "xd7VAW5RHiOcpmRfnyr7DrHotkGk2RqdxENqLtg1p1E";
-//        $consumer_key = "VBhd4yfDM5InG2WlUOP4xQ";
-//        $consumer_secret = "jR6kfTczx3CuGzjQPi7pbJNhbcUSaUlhyRunimOk";
-        
-        
-		?>
-
-		<p>
-            <label for="<?php echo $this->get_field_id( 'title' ); ?>"><?php echo "Title:"; ?></label> 
-            <input class="widefat" id="<?php echo $this->get_field_id( 'title' ); ?>" name="<?php echo $this->get_field_name( 'title' ); ?>" type="text" value="<?php echo $title; ?>" />
-		</p>
-		<p>
-            <label for="<?php echo $this->get_field_id( 'username' ); ?>"><?php echo "Username:"; ?></label> 
-            <input class="widefat" id="<?php echo $this->get_field_id( 'username' ); ?>" name="<?php echo $this->get_field_name( 'username' ); ?>" type="text" value="<?php echo $username; ?>" />
-		</p>
-		<p>
-            <label for="<?php echo $this->get_field_id( 'tweets_to_display' ); ?>"><?php echo "Number of Tweets to show: "; ?></label><input id="<?php echo $this->get_field_id( 'tweets_to_display' ); ?>" name="<?php echo $this->get_field_name( 'tweets_to_display' ); ?>" type="text" value="<?php echo $tweets_to_display; ?>" size="1"/>
-		</p>
-		<p>
-            <label for="<?php echo $this->get_field_id( 'cache_expiration' ); ?>"><?php echo "Refresh feed every "; ?></label><input id="<?php echo $this->get_field_id( 'cache_expiration' ); ?>" name="<?php echo $this->get_field_name( 'cache_expiration' ); ?>" type="text" value="<?php echo $cache_expiration; ?>" size="3" /><label for="<?php echo $this->get_field_id( 'cache_expiration' ); ?>"> hours</label>
-		</p>
-		<p>
-            <label for="<?php echo $this->get_field_id( 'oauth_access_token' ); ?>"><?php echo "oAuth Access Token:"; ?></label> 
-            <input class="widefat" id="<?php echo $this->get_field_id( 'oauth_access_token' ); ?>" name="<?php echo $this->get_field_name( 'oauth_access_token' ); ?>" type="text" value="<?php echo $oauth_access_token; ?>" />
-		</p>
-		<p>
-            <label for="<?php echo $this->get_field_id( 'oauth_access_token_secret' ); ?>"><?php echo "oAuth Access Token Secret:"; ?></label> 
-            <input class="widefat" id="<?php echo $this->get_field_id( 'oauth_access_token_secret' ); ?>" name="<?php echo $this->get_field_name( 'oauth_access_token_secret' ); ?>" type="text" value="<?php echo $oauth_access_token_secret; ?>" />
-		</p>
-		<p>
-            <label for="<?php echo $this->get_field_id( 'consumer_key' ); ?>"><?php echo "Consumer Key:"; ?></label> 
-            <input class="widefat" id="<?php echo $this->get_field_id( 'consumer_key' ); ?>" name="<?php echo $this->get_field_name( 'consumer_key' ); ?>" type="text" value="<?php echo $consumer_key; ?>" />
-		</p>
-		<p>
-            <label for="<?php echo $this->get_field_id( 'consumer_secret' ); ?>"><?php echo "Consumer Secret:"; ?></label> 
-            <input class="widefat" id="<?php echo $this->get_field_id( 'consumer_secret' ); ?>" name="<?php echo $this->get_field_name( 'consumer_secret' ); ?>" type="text" value="<?php echo $consumer_secret; ?>" />
-		</p>
-        
-        <?php
-
 		// Display the admin form
 		include( plugin_dir_path(__FILE__) . '/views/admin.php' );
 
 	} // end form
-
-	/*--------------------------------------------------*/
-	/* Public Functions
-	/*--------------------------------------------------*/
-
-	/**
-	 * Fired when the plugin is activated.
-	 *
-	 * @param		boolean	$network_wide	True if WPMU superadmin uses "Network Activate" action, false if WPMU is disabled or plugin is activated on an individual blog.
-	 */
-	// public function activate( $network_wide ) {
-		// TODO define activation functionality here
-	// } // end activate
-
-	/**
-	 * Fired when the plugin is deactivated.
-	 *
-	 * @param	boolean	$network_wide	True if WPMU superadmin uses "Network Activate" action, false if WPMU is disabled or plugin is activated on an individual blog
-	 */
-	// public function deactivate( $network_wide ) {
-		// TODO define deactivation functionality here
-	// } // end deactivate
-
-	/**
-	 * Registers and enqueues admin-specific styles.
-	 */
-//	public function register_admin_styles() {
-
-		// TODO:	Change 'widget-name' to the name of your plugin
-//		wp_enqueue_style( 'widget-name-admin-styles', plugins_url( 'widget-name/css/admin.css' ) );
-
-//	} // end register_admin_styles
-
-	/**
-	 * Registers and enqueues admin-specific JavaScript.
-	 */
-//	public function register_admin_scripts() {
-
-		// TODO:	Change 'widget-name' to the name of your plugin
-//		wp_enqueue_script( 'widget-name-admin-script', plugins_url( 'widget-name/js/admin.js' ), array('jquery') );
-
-//	} // end register_admin_scripts
-
-	/**
-	 * Registers and enqueues widget-specific styles.
-	 */
-//	public function register_widget_styles() {
-
-		// TODO:	Change 'widget-name' to the name of your plugin
-//		wp_enqueue_style( 'widget-name-widget-styles', plugins_url( 'widget-name/css/widget.css' ) );
-
-//	} // end register_widget_styles
-
-	/**
-	 * Registers and enqueues widget-specific scripts.
-	 */
-//	public function register_widget_scripts() {
-
-		// TODO:	Change 'widget-name' to the name of your plugin
-//		wp_enqueue_script( 'widget-name-script', plugins_url( 'widget-name/js/widget.js' ), array('jquery') );
-
-//	} // end register_widget_scripts
 
 } // end class
 
