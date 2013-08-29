@@ -17,7 +17,7 @@ __NOTE__ Tweets that are sent to someone, i.e., tweets that have an @username in
 Screenshots
 -----------
 
-![displayes tweets example](https://raw.github.com/elimc/em-list-tweets/master/images/front_end.png "Displayed Tweets")
+![displayes tweets example](https://raw.github.com/elimc/em-list-tweets/master/images/front_end.PNG "Displayed Tweets")
 
 FAQ
 ---
@@ -69,7 +69,7 @@ Now that your plugin in activated, you will have to set up a Twitter Developer A
 
 3) Create oAuth access tokens. This will give you a consumer key, consumer secret, access token, and access token secret. Copy these, you will need them later!
 
-![create oAuth access tokens](https://raw.github.com/elimc/em-list-tweets/master/images/widget_screen.png "create oAuth access tokens")
+![create oAuth access tokens](https://raw.github.com/elimc/em-list-tweets/master/images/create_access_token.png "create oAuth access tokens")
 
 4) Change your requests from `read` to `read and write`. First you will select the `Settings` tab.
 
@@ -81,7 +81,7 @@ Now that your plugin in activated, you will have to set up a Twitter Developer A
 
 6) Put the oAuth keys into the widget in the widget admin section, along with Twitter username.
 
-![widget options](https://raw.github.com/elimc/em-list-tweets/master/images/widget_screen.png "Widget options")
+![widget options](https://raw.github.com/elimc/em-list-tweets/master/images/widget_screen.PNG "Widget options")
 
 Changelog
 ---------
