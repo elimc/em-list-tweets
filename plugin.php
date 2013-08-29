@@ -3,7 +3,7 @@
 Plugin Name: EM List Tweets
 Plugin URI: https://github.com/elimc/em-list-tweets
 Description: Displays recent tweets with Twitter API 1.1
-Version: .9
+Version: 0.9.1
 Author: Eli McMakin
 Author URI: http://elimcmakin.com/
 Author Email: elimc184@hotmail.com
