@@ -6,13 +6,13 @@
 About
 -----
 
-**EM List Tweets** is a simple way to display Tweets on your WordPress Web site, using Twitter API 1.1. Although the displayed Tweets are wrapped in classes, these classes have no predefined styles attached to them. This widget is an excellent way to work on a Twitter feed for client stes without having to register the clients for JetPack, and its Twitter Feed. Of course, with this widget, you might find that you do not need to download JetPack.
+**EM List Tweets** is a simple way to display Tweets on your WordPress Web site, using Twitter API 1.1. This widget is an excellent way to work on a Twitter feed for client stes without having to register the clients for Jetpack, and its Twitter Feed. Of course, with this widget, you might find that you do not need to download Jetpack.
 
-While you don't need to register for JetPack, you will need to create a Twitter Developer Account. This is how things work with Twitter API 1.1, and there is no way around this. Once you have a free Twitter Developer Account, you will be able to receive the oAuth tokens necessary to receive your Tweets. Check out the Installation section in this document to see how to get this working.
+You will need to create a Twitter Developer Account. This is how things work with Twitter API 1.1, and there is no way around this. Once you have a free Twitter Developer Account, you will be able to receive the oAuth tokens necessary to receive your Tweets. Check out the Installation section in this document to see how to get this working.
 
-Most of the fields on the backend are self-explanatory, except for the the Refresh Tweets field. This field determines how often the widget will check the Twitter feed for new tweets. A lower number means the feed will refresh with new tweets faster. A higher number means that the feed will display on your site faster, becase it won't have to make as many requests to Twitter. The default value is `12`, which means the feed will update twice a day.
+Most of the fields on the backend are self-explanatory, except for the the Refresh Tweets field. This field determines how often the widget will check the Twitter feed for new tweets. A lower number means the feed will refresh with new tweets faster. A higher number means that the feed will display on your site faster, becase it won't have to make as many requests to Twitter. The default value is `12`, which means the feed will update every 12 hours, or twice a day.
 
-__NOTE__ Tweets that are sent to someone, i.e., tweets that have an @username in them, will not be displayed with this widget. Perhaps they will in the future, if there are requests for that feature.
+__NOTE__ Tweets that are sent to someone, i.e., tweets that have an `@username` in them, will not be displayed with this widget. Perhaps they will in the future, if there are requests for that feature.
 
 Screenshots
 -----------
@@ -22,17 +22,21 @@ Screenshots
 FAQ
 ---
 
+__The display of the Tweet feed is ugly__
+
+The widget has no styles applied to it. This gives you the freedom to integrate it into your custom theme with your custom styles.
+
 __Why did a lot of the Twitter widgets for WordPress recently break?__
 
 Twitter is now using oAuth to validate users. You can no longer grab a simple JSON stream from any user and display its contents.
 
 __Why did they do that?__
 
-I can only assume that they have an evil corporate agenda . . . [real reason](https://dev.twitter.com/docs/application-permission-model)
+I can only assume that they have an evil corporate agenda ([the official reason](https://dev.twitter.com/docs/application-permission-model))
 
-__What's wrong with JetPack?__
+__What's wrong with Jetpack?__
 
-It doesn't let me do things on my development servers without signing up for WordPress.com
+It doesn't let me do things on my development server without signing up for WordPress.com
 
 __Can I fork this, improve it, and send it back to you?__
 
@@ -44,7 +48,7 @@ It's up to you. So far, there have been no industrial accidents involving more t
 
 __Can I request feture updates for this Twitter?__
 
-Sure. I am attempting to keep this widget as simple as possible, but if the change will increase utility more than complexity, I would consider updating the code. Alternatively, you can fork it and submit a pull request.
+Sure. I am attempting to keep this widget as simple as possible, but if the change will increase utility more than it will increase complexity, I would consider updating the code. Alternatively, you can fork it and submit a pull request.
 
 Requirements
 ------------
@@ -57,12 +61,15 @@ Installation
 The first thing to do is to download the widget and get it installed in your WordPress theme.
 
 1) Download this widget as a .zip.
+
 2) Upload .zip file to your plugins directory. You can find the file uploader under `Plugins => Add New` in the WordPress sidebar menu.
+
 3) Click on the `Plugin` link in the WordPress sidebar. Find `EM List Tweets` in the list of plugins and click the activate link. Now your widget is activated!
 
 Now that your plugin in activated, you will have to set up a Twitter Developer Acount and generate some oAuth keys.
 
 1) Sign up for a free ([developer account](https://dev.twitter.com/apps)) on Twitter.
+
 2) Create a free app with your account. This is necessary to authenticate your to Twitter.
 
 ![create twitter app](https://raw.github.com/elimc/em-list-tweets/master/images/create_app.png "create twitter app")
