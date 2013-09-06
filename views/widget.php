@@ -57,7 +57,7 @@
          * Grab Twitter feed from soft cache. Prevents the need to grab Twitter data ever time someone comes to the site.
          * 
          * @param array $twitter_data_feed - Array of Tweets grabbed from Twitter JSON.
-         * @param type $cache_expiration - Set the soft cache to expire every so many hours.
+         * @param int $cache_expiration - Set the soft cache to expire every so many hours.
          * @return array
          */
         function set_up_soft_cache( $twitter_data_feed, $cache_expiration = 12 ) {
@@ -141,7 +141,7 @@
             return $link;
         }
         
-        
+        // The actual Tweet output.
         $twitter_output = "<ul>";
         if ($twitter_data['errors'][0]['message'] == 'Could not authenticate you') {
             $twitter_output .= "<li>There was an issue authenticating you with Twitter. Did you properly enter your oAuth information?</li>";
