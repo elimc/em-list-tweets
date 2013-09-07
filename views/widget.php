@@ -149,7 +149,7 @@
             $i = 0;
             foreach ($twitter_data as $tweet) {
                 if ($i < $tweets_to_display) {
-                    if ($tweet['in_reply_to_screen_name'] !== NULL) { // If particular tweet is directed @username, then skip it.
+                    if ($replies == 0 && $tweet['in_reply_to_screen_name'] !== NULL) { // If particular tweet is directed @username, then skip it.
                         continue;
                     }
                     

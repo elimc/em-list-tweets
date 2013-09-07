@@ -78,6 +78,7 @@ class EM_List_Tweets extends WP_Widget {
         $twitter_username = $instance['username'];
         $tweets_to_display = $instance[ 'tweets_to_display' ];
         $cache_expiration = $instance[ 'cache_expiration' ];
+        $replies = $instance[ 'replies' ];
         
         $oauth_access_token = $instance['oauth_access_token'];
         $oauth_access_token_secret = $instance['oauth_access_token_secret'];
@@ -108,6 +109,7 @@ class EM_List_Tweets extends WP_Widget {
 		$old_instance[ 'username' ] = ( !empty( $new_instance[ 'username' ] ) ) ? trim( strip_tags( str_replace( "@", "", $new_instance[ 'username' ]) ) ) : '';
 		$old_instance[ 'tweets_to_display' ] = ( !empty( $new_instance[ 'tweets_to_display' ] ) ) ? trim( strip_tags( intval( $new_instance[ 'tweets_to_display' ] ) ) ) : '';
 		$old_instance[ 'cache_expiration' ] = ( !empty( $new_instance[ 'cache_expiration' ] ) ) ? trim( strip_tags( intval( $new_instance[ 'cache_expiration' ] ) ) ) : '';
+		$old_instance[ 'replies' ] = ( !empty( $new_instance[ 'replies' ] ) ) ? trim( strip_tags( intval( $new_instance[ 'replies' ] ) ) ) : 0;
         
 		$old_instance[ 'oauth_access_token' ] = ( !empty( $new_instance[ 'oauth_access_token' ] ) ) ? trim( strip_tags( $new_instance[ 'oauth_access_token' ] ) ) : '';
 		$old_instance[ 'oauth_access_token_secret' ] = ( !empty( $new_instance[ 'oauth_access_token_secret' ] ) ) ? trim( strip_tags( $new_instance[ 'oauth_access_token_secret' ] ) ) : '';
@@ -131,6 +133,7 @@ class EM_List_Tweets extends WP_Widget {
 		$username = ( isset( $instance[ 'username' ] ) ) ? esc_attr( $instance[ 'username' ] ) : "Twitter Username";
 		$tweets_to_display = ( isset( $instance[ 'tweets_to_display' ] ) ) ? esc_attr( $instance[ 'tweets_to_display' ] ) : 5;
 		$cache_expiration = ( isset( $instance[ 'cache_expiration' ] ) ) ? esc_attr( $instance[ 'cache_expiration' ] ) : 12;
+		$replies = ( isset( $instance[ 'replies' ] ) ) ? esc_attr( $instance[ 'replies' ] ) : 0;
         
 		$oauth_access_token = ( isset( $instance[ 'oauth_access_token' ] ) ) ? esc_attr( $instance[ 'oauth_access_token' ] ) : "";
 		$oauth_access_token_secret = ( isset( $instance[ 'oauth_access_token_secret' ] ) ) ? esc_attr( $instance[ 'oauth_access_token_secret' ] ) : "";
