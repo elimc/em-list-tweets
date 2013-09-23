@@ -2,56 +2,74 @@
 <?php
 
         // Code to fetch the feed was taken from here: http://stackoverflow.com/a/12939923
-        function buildBaseString($baseURI, $method, $params)
-        {
+
+        /**
+         * Build a string that will log into Twitter and grab json data.
+         * 
+         * @param string $baseURI - URL to get data from.
+         * @param string $method - HTTP method used to grab data. In this case, GET.
+         * @param array $params - oAuth information to securely log into Twitter.
+         * @return string
+         */
+        function build_a_base_string( $baseURI, $method, $params ) {
             $r = array();
-            ksort($params);
-            foreach ($params as $key => $value) {
-                $r[] = "$key=" . rawurlencode($value);
+            ksort( $params );
+            foreach ( $params as $key => $value ) {
+                $r[] = "$key=" . rawurlencode( $value );
             }
-            return $method . "&" . rawurlencode($baseURI) . '&' . rawurlencode(implode('&', $r));
+            return $method . "&" . rawurlencode( $baseURI ) . '&' . rawurlencode( implode ( '&', $r ) );
         }
 
-        function buildAuthorizationHeader($oauth)
-        {
+        /**
+         * Prepare header for request to Twitter.
+         * 
+         * @param array $oauth - Variables in header request.
+         * @return string
+         */
+        function build_authorization_header( $oauth ) {
             $r = 'Authorization: OAuth ';
             $values = array();
-            foreach ($oauth as $key => $value)
-                $values[] = "$key=\"" . rawurlencode($value) . "\"";
+            foreach ( $oauth as $key => $value ) {
+                $values[] = "$key=\"" . rawurlencode( $value ) . "\"";
+            }
             $r .= implode(', ', $values);
             return $r;
         }
 
         $url = "https://api.twitter.com/1.1/statuses/user_timeline.json";
 
-        $oauth = array('oauth_consumer_key' => $consumer_key,
+        $oauth = array(
+            'oauth_consumer_key' => $consumer_key,
             'oauth_nonce' => time(),
             'oauth_signature_method' => 'HMAC-SHA1',
             'oauth_token' => $oauth_access_token,
             'oauth_timestamp' => time(),
-            'oauth_version' => '1.0');
+            'oauth_version' => '1.0'
+        );
 
-        $base_info = buildBaseString($url, 'GET', $oauth);
-        $composite_key = rawurlencode($consumer_secret) . '&' . rawurlencode($oauth_access_token_secret);
-        $oauth_signature = base64_encode(hash_hmac('sha1', $base_info, $composite_key, true));
+        $base_info = build_a_base_string( $url, 'GET', $oauth );
+        $composite_key = rawurlencode( $consumer_secret ) . '&' . rawurlencode( $oauth_access_token_secret );
+        $oauth_signature = base64_encode( hash_hmac( 'sha1', $base_info, $composite_key, true ) );
         $oauth['oauth_signature'] = $oauth_signature;
 
         // Make Requests
-        $header = array(buildAuthorizationHeader($oauth), 'Expect:');
-        $options = array(CURLOPT_HTTPHEADER => $header,
+        $header = array( build_authorization_header( $oauth ), 'Expect:' );
+        $options = array(
+            CURLOPT_HTTPHEADER => $header,
             //CURLOPT_POSTFIELDS => $postfields,
             CURLOPT_HEADER => false,
             CURLOPT_URL => $url,
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_SSL_VERIFYPEER => false);
+            CURLOPT_SSL_VERIFYPEER => false
+        );
 
         $feed = curl_init();
-        curl_setopt_array($feed, $options);
-        $json = curl_exec($feed);
-        curl_close($feed);
+        curl_setopt_array( $feed, $options );
+        $json = curl_exec( $feed );
+        curl_close( $feed );
 
         // JSON data, with our tweets, comes back as object. We convert it into an array and assign it to a var.
-        $twitter_data_feed = json_decode($json, true);
+        $twitter_data_feed = json_decode( $json, true );
         
         /**
          * Grab Twitter feed from soft cache. Prevents the need to grab Twitter data ever time someone comes to the site.
@@ -107,7 +125,8 @@
         * @return string - Tweet text with #hashtags linked.
         */
         function make_hashtaggable( $parsed_link ) {
-            $parsed_link = preg_replace_callback("/(^|\s)(#[\w\x{00C0}-\x{00D6}\x{00D8}-\x{00F6}\x{00F8}-\x{00FF}]+)/iu", "make_hashtaggable_cb", $parsed_link);
+            // (^|\s)(#[\w\x{00C0}-\x{00D6}\x{00D8}-\x{00F6}\x{00F8}-\x{00FF}]+)/iu
+            $parsed_link = preg_replace_callback("/(^|\s)(#\S+)/i", "make_hashtaggable_cb", $parsed_link);
             return $parsed_link;
         }
 
@@ -143,17 +162,17 @@
         
         // The actual Tweet output.
         $twitter_output = "<ul>";
-        if ($twitter_data['errors'][0]['message'] == 'Could not authenticate you') {
+        if ( $twitter_data['errors'][0]['message'] == 'Could not authenticate you' ) {
             $twitter_output .= "<li>There was an issue authenticating you with Twitter. Did you properly enter your oAuth information?</li>";
-        } elseif ($twitter_data[0]['id_str']) { // Check if @username has any tweets.
+        } elseif ( $twitter_data[0]['id_str'] ) { // Check if @username has any tweets.
             $i = 0;
-            foreach ($twitter_data as $tweet) {
-                if ($i < $tweets_to_display) {
-                    if ($replies == 0 && $tweet['in_reply_to_screen_name'] !== NULL) { // If particular tweet is directed @username, then skip it.
+            foreach ( $twitter_data as $tweet ) {
+                if ( $i < $tweets_to_display ) {
+                    if ( $replies == 0 && $tweet['in_reply_to_screen_name'] !== NULL ) { // If particular tweet is directed @username, then skip it.
                         continue;
                     }
                     
-                    //
+                    // Display the individual tweet inside of a list.
                     $twitter_output .= "<li>";
 
                         $parsed_link = $tweet['text'];
@@ -164,7 +183,7 @@
                         $twitter_output .= $parsed_link;
 
                         // Output a human readable time stamp.
-                        if ($tweet['created_at']) {
+                        if ( $tweet['created_at'] ) {
                             $twitter_output .= "<span class='time-meta'>";
                                 $time_diff = human_time_diff( strtotime( $tweet['created_at'] ) ) . ' ago';
                                 $tweet_id_str = $tweet['id_str'];
@@ -181,4 +200,5 @@
         }
         $twitter_output .= "</ul>";
         
+        // Display all of the tweets.
         echo $twitter_output;

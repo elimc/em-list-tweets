@@ -38,7 +38,7 @@ __Can I fork this, improve it, and send it back to you?__
 
 YES! The more eyeballs that are refactoring my code to make it more secure, terse, and speedy, the better.
 
-__Can I request feture updates for this Twitter?__
+__Can I request feature updates for this Twitter?__
 
 Sure. I am attempting to keep this widget as simple as possible, but if the change will increase utility more than it will increase complexity, I would consider updating the code. Alternatively, you can fork it and submit a pull request.
 
@@ -80,7 +80,7 @@ Now that your plugin in activated, you will have to set up a Twitter Developer A
 
 5) Change your application type to `Read and Write`.
 
-![read and write seetings](https://raw.github.com/elimc/em-list-tweets/master/images/read_and_write.png "read and write seetings")
+![read and write seetings](https://raw.github.com/elimc/em-list-tweets/master/images/read_and_write.png "read and write settings")
 
 Final Step
 ----------
@@ -91,6 +91,12 @@ Put the oAuth keys into the widget in the widget admin section, along with Twitt
 
 Changelog
 ---------
+
+### 1.0.2 (September 22, 2013)
+* Cleaned code formatting.
+* Fixed some comments.
+* Small grammar fixes.
+* Improved hashtag linking.
 
 ### 1.0.1 (September 7, 2013)
 * Added @replies and mentions functionality.
