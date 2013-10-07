@@ -125,8 +125,10 @@
         * @return string - Tweet text with #hashtags linked.
         */
         function make_hashtaggable( $parsed_link ) {
-            // (^|\s)(#[\w\x{00C0}-\x{00D6}\x{00D8}-\x{00F6}\x{00F8}-\x{00FF}]+)/iu
-            $parsed_link = preg_replace_callback("/(^|\s)(#\S+)/i", "make_hashtaggable_cb", $parsed_link);
+            // If there is a need to add support for punctuation for other languages, check out: http://www.fileformat.info/info/unicode/category/Po/list.htm
+            // Inclusive: (^|\s)(#[\w\x{00C0}-\x{00D6}\x{00D8}-\x{00F6}\x{00F8}-\x{00FF}]+)/iu
+            // Exclusive: (^|\s)(#[^ .,:;!?¡¿\x{0021}]+)/iu
+            $parsed_link = preg_replace_callback("/(^|\s)(#[^ .,:;!?¡¿]+)/iu", "make_hashtaggable_cb", $parsed_link);
             return $parsed_link;
         }
 

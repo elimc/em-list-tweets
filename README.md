@@ -42,6 +42,10 @@ __Can I request feature updates for this Twitter?__
 
 Sure. I am attempting to keep this widget as simple as possible, but if the change will increase utility more than it will increase complexity, I would consider updating the code. Alternatively, you can fork it and submit a pull request.
 
+__This plugin does not have proper hashtag linking for my language__
+
+Let me know and I'll fix it for you. None of the plugins I have seen have good hashtag linking. Perhaps this can be the first.
+
 Requirements
 ------------
 
@@ -91,6 +95,9 @@ Put the oAuth keys into the widget in the widget admin section, along with Twitt
 
 Changelog
 ---------
+
+### 1.1 (October 7, 2013)
+* Much improved hashtag linking.
 
 ### 1.0.2 (September 22, 2013)
 * Cleaned code formatting.
